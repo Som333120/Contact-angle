@@ -15,8 +15,6 @@ def nothing(x):
 def selectPoint(point1,point2) :
     mark_1 = result.loc[[point1],['conner_axis-X','conner_axis-Y']]
     mark_2 = result.loc[[point2],['conner_axis-X','conner_axis-Y']]
-    print(111)
-
 
     pt1 = (int(mark_1.iloc[0,0]),int(mark_1.iloc[0,1]))
     pt2 = (int(mark_2.iloc[0,0]),int(mark_2.iloc[0,1]))
@@ -34,10 +32,9 @@ def selectPoint(point1,point2) :
 img =cv2.imread('21.jpg',0)
 r = cv2.selectROI('Select Area ',img)
 bright = img[int(r[1]):int(r[1]+r[3]), int(r[0]):int(r[0]+r[2])] #crop image 
-yen_threshold = threshold_yen(img)
+yen_threshold = threshold_yen(bright)
 bright = rescale_intensity(bright, (0, yen_threshold), (0, 255)) # AUTO CONTRAST IMAGE 
-high_thresh, thresh_im = cv2.threshold(bright, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU) #calculate hight and low  threshold by OTSU method
-lowThresh = 0.5*high_thresh
+
 
 
 num = 1 
@@ -48,7 +45,7 @@ data = pd.DataFrame([])
 coor = pd.DataFrame([])
 while(1) :
 
-    edge = cv2.Canny(bright,high_thresh,lowThresh) #edge detection 
+    edge = cv2.Canny(bright,200,100) #edge detection 
     th, im_th = cv2.threshold(bright, 220, 225, cv2.THRESH_BINARY_INV)
     im_floodfill = im_th.copy()
     h, w = im_th.shape[:2]
