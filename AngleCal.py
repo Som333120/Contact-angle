@@ -32,9 +32,9 @@ def selectPoint(point1,point2) :
 img =cv2.imread('21.jpg',0)
 r = cv2.selectROI('Select Area ',img)
 bright = img[int(r[1]):int(r[1]+r[3]), int(r[0]):int(r[0]+r[2])] #crop image 
-yen_threshold = threshold_yen(bright)
-bright = rescale_intensity(bright, (0, yen_threshold), (0, 255)) # AUTO CONTRAST IMAGE 
-
+#yen_threshold = threshold_yen(bright)
+#bright = rescale_intensity(bright, (0, yen_threshold), (0, 255)) # AUTO CONTRAST IMAGE 
+#
 
 
 num = 1 
@@ -44,8 +44,8 @@ contact_point = pd.DataFrame([])
 data = pd.DataFrame([])
 coor = pd.DataFrame([])
 while(1) :
-
-    edge = cv2.Canny(bright,200,100) #edge detection 
+    
+    edge = cv2.Canny(bright,100,200) #edge detection 
     th, im_th = cv2.threshold(bright, 220, 225, cv2.THRESH_BINARY_INV)
     im_floodfill = im_th.copy()
     h, w = im_th.shape[:2]
