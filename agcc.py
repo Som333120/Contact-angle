@@ -9,7 +9,6 @@ def nothing(x):
 
 cv2.namedWindow('image')
 # create trackbars for color change
-cv2.createTrackbar('alpha1','image',1,3,nothing)
 cv2.createTrackbar('beta','image',0,100,nothing)
 cv2.createTrackbar('npi','image',0,700,nothing)
 
@@ -29,14 +28,14 @@ while(1):
     cl1 = clahe.apply(adjusted)
 
     edge = cv2.Canny(cl1,100,200,apertureSize = 3)
-    th, im_th = cv2.threshold(adjusted, 220, 255, cv2.THRESH_BINARY_INV);
+    th, im_th = cv2.threshold(adjusted, 220, 255, cv2.THRESH_BINARY_INV)
     if im_th is None:
         print('Cannot load image ')
         break
     im_floodfill = im_th.copy()
     h, w = im_th.shape[:2]
     mask = np.zeros((h+2, w+2), np.uint8)
-    cv2.floodFill(im_floodfill, mask, (0,0), 255);
+    cv2.floodFill(im_floodfill, mask, (0,0), 255)
     im_floodfill_inv = cv2.bitwise_not(im_floodfill)
     im_out = im_th | im_floodfill_inv
     edge2 = cv2.Canny(im_out,200,200)

@@ -105,23 +105,27 @@ while(1) :
     frames = [coor, data, contact_point]
     result = pd.concat(frames,axis =1 )
     result.to_csv('result.csv', encoding='utf-8', index=False)
-    break
     #cv2.imshow('test',im)
     if k == 27 :
         break
+
+cv2.destroyAllWindows()
+
 fig,(ax1,ax2) = plt.subplots(1,2)
 ax1.imshow(im)
 ax2.imshow(edge)
 
 plt.show()
-method = str(input("Enter_method"))
+
+
+"""method = str(input("Enter_method"))
 if method == str('circle') :
     print("NO")
 elif method == str('half'):
     point1=  (int(input("Enter_Point1 ")))
     point2 = (int(input("Enter_Point1 ")))
     print(point1,point2)
-    selectPoint(point1,point2)
+    selectPoint(point1,point2)"""
 
 
 
