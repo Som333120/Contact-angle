@@ -12,6 +12,7 @@ from skimage.feature import canny
 from skimage.transform import hough_ellipse
 from skimage.draw import ellipse_perimeter
 from skimage import io
+from natsort import index_natsorted
 
 
 """ matplotlib(3.3.3),opencv-python(4.4.0.46), 
@@ -25,36 +26,37 @@ def findline(edge_value,im_out_fill):
     data = pd.DataFrame([])
     lines = cv2.HoughLinesP(edge_value,rho = 1.0,
     theta = np.pi/180,
-    threshold = 20,
-    minLineLength= 2,
+    threshold = 1,
+    minLineLength= 0,
     maxLineGap= 0)
     
     lline_img = np.zeros((im_out_fill.shape[0],im_out_fill.shape[1],3),dtype=np.uint8)
     line_color = [0,255,0]
-    dot_color = [0,255,0]
+    dot_color = [255,255,0]
     global im
     im = cv2.cvtColor(im_out_fill,cv2.COLOR_GRAY2BGR )
     #drawing line on edge
     for line in lines :
         for x1, y1, x2, y2 in line :
-            cv2.line(im, (x1,y1),(x2,y2),line_color,thickness= 2)
-            cv2.circle(im,(x1,y1),3,line_color,-1)
-            cv2.circle(im,(x2,y2),3,line_color,-1)
+            cv2.line(im, (x1,y1),(x2,y2),line_color,thickness= 1)
+            #cv2.circle(im,(x1,y1),1,dot_color,-1)
+            #cv2.circle(im,(x2,y2),1,dot_color,-1)
             data = data.append(pd.DataFrame({'X1': x1, 'Y1': y1, 'X2' :x2, 'Y2':y2}, index=[0]), ignore_index=True)  
+    
+    #data.sort_values(by="X1",key=lambda x: np.argsort(index_natsorted(data["X1"])))
+    data.sort_values(by=['X1'], inplace=True)
+    data.to_csv('result.csv', encoding='utf-8', index=False)
+    print(data)
     return(im)
 
 def nothing(x) : #if don't press anything in keybord exit
     pass
 
-def testprint(tea =im):
-    if im != 0 :
-        print("X")
-
 def findcircle(detectedges,gray_image) :
     circles = cv2.HoughCircles(detectedges,cv2.HOUGH_GRADIENT,1,1000,
                             param1=50,param2=30,minRadius=70,maxRadius=0)
     circles = np.uint16(np.around(circles))
-    resultEllipse = hough_ellipse(detectedges, accuracy=25, threshold=100, min_size=100, max_size=120)
+    
     RGB_con  =cv2.cvtColor(gray_image,cv2.COLOR_GRAY2BGR) 
     for i in circles[0,:]:
         # draw the outer circle
@@ -63,37 +65,14 @@ def findcircle(detectedges,gray_image) :
         cv2.circle(RGB_con,(i[0],i[1]),2,(255,255,0),thickness=1)
     while  (1) :
 
-        cv2.imshow("0000000",resultEllipse)# show image 
+        cv2.imshow("0000000",RGB_con)# show image 
+        cv2.imshow("im",im)
         k = cv2.waitKey(1) &0xfff
         if k == 27 : #press ESC to exit 
             break
 
     return gray_image
 
-def findellipse(detectedg):
-    image_rgb = io.imread("21.jpg")
-    image_gray = color.rgb2gray(image_rgb)
-    edges_ski=canny(image_gray, sigma=2.0,low_threshold=0.55, high_threshold=0.8)
-    result = hough_ellipse(edges_ski, accuracy=20, threshold=250,min_size=100, max_size=120)
-    result.sort(order='accumulator')
-    # Estimated parameters for the ellipse
-    best = list(result[-1])
-    yc, xc, a, b = [int(round(x)) for x in best[1:5]]
-    orientation = best[5]
-
-    # Draw the ellipse on the original image
-    cy, cx = ellipse_perimeter(yc, xc, a, b, orientation)
-    image_rgb[cy, cx] = (0, 0, 255)
-    # Draw the edge (white) and the resulting ellipse (red)
-    edges_ski = color.gray2rgb(img_as_ubyte(edges_ski))
-    edges_ski[cy, cx] = (250, 0, 0)
-    
-    while(1) :
-        cv2.imshow("0000000",edges_ski)# show image 
-        k = cv2.waitKey(1) &0xfff
-        if k == 27 : #press ESC to exit 
-            break
-    
 
 img = cv2.imread('21.jpg',0) #read image from directery 
 r = cv2.selectROI("Select Area",img) #select ROI to cut image 
@@ -109,19 +88,11 @@ while (1) :
     cv2.floodFill(im_floodfill, mask, (0,0), 255)
     im_floodfill_inv = cv2.bitwise_not(im_floodfill)
     im_out = im_th | im_floodfill_inv #fill white\black hole ib image 
+    edge_imout =cv2.Canny(im_out,100,200)
     
-    """findline(edge_value= edge,im_out_fill= im_out)
+    findline(edge_value= edge_imout,im_out_fill= im_out)
     cv2.destroyAllWindows()
-    findcircle(detectedges=bright,gray_image=edge)"""
-    findellipse(detectedg=edge)
+    findcircle(detectedges=bright,gray_image=edge)
 
-    print("OK")
-    
-    """cv2.imshow("test0",)# show image 
-    k = cv2.waitKey(1) &0xfff
-
-    if k == 27 : #press ESC to exit 
-        break
-"""
 cv2.destroyAllWindows()
 

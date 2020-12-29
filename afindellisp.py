@@ -34,13 +34,10 @@ image_rgb[cy, cx] = (0, 0, 255)
 edges = color.gray2rgb(img_as_ubyte(edges))
 edges[cy, cx] = (250, 0, 0)
 
-fig2, (ax1, ax2) = plt.subplots(ncols=2, nrows=1, figsize=(8, 4),
-                                sharex=True, sharey=True)
 
-ax1.set_title('Original picture')
-ax1.imshow(image_rgb)
+from skimage import data
+from skimage.viewer import ImageViewer
 
-ax2.set_title('Edge (white) and result (red)')
-ax2.imshow(edges)
 
-plt.show()
+viewer = ImageViewer(edges)
+viewer.show()
