@@ -21,6 +21,18 @@ scipy(1.5.4)"""
 
 im = 0 
 
+def resize_image() :
+    scale_percent = 50
+
+    #calculate the 50 percent of original dimensions
+    width = int(src.shape[1] * scale_percent / 100)
+    height = int(src.shape[0] * scale_percent / 100)
+    
+    # dsize
+    dsize = (width, height)
+    
+    # resize image
+    output = cv2.resize(src, dsize)
 def findline(edge_value,im_out_fill): 
 
     data = pd.DataFrame([])
@@ -46,15 +58,16 @@ def findline(edge_value,im_out_fill):
     #data.sort_values(by="X1",key=lambda x: np.argsort(index_natsorted(data["X1"])))
     data.sort_values(by=['X1'], inplace=True)
     data.to_csv('result.csv', encoding='utf-8', index=False)
-    print(data)
+    min_axisy = data.loc[data['Y1'].idxmin()] #find minnimium value in axis-y
+    print(min_axisy) #find minnimium value in axis-y
     return(im)
 
 def nothing(x) : #if don't press anything in keybord exit
     pass
 
 def findcircle(detectedges,gray_image) :
-    circles = cv2.HoughCircles(detectedges,cv2.HOUGH_GRADIENT,1,1000,
-                            param1=50,param2=30,minRadius=70,maxRadius=0)
+    circles = cv2.HoughCircles(detectedges,cv2.HOUGH_GRADIENT,1,1000000,
+                            param1=50,param2=30,minRadius=10,maxRadius=0)
     circles = np.uint16(np.around(circles))
     
     RGB_con  =cv2.cvtColor(gray_image,cv2.COLOR_GRAY2BGR) 
@@ -63,10 +76,11 @@ def findcircle(detectedges,gray_image) :
         cv2.circle(RGB_con,(i[0],i[1]),i[2],(0,255,25),thickness=1)
         # draw the center of the circle
         cv2.circle(RGB_con,(i[0],i[1]),2,(255,255,0),thickness=1)
+        
     while  (1) :
 
-        cv2.imshow("0000000",RGB_con)# show image 
-        cv2.imshow("im",im)
+        cv2.imshow("Find_circle",RGB_con)# show image 
+        cv2.imshow("Edge_points",im)
         k = cv2.waitKey(1) &0xfff
         if k == 27 : #press ESC to exit 
             break
@@ -93,6 +107,8 @@ while (1) :
     findline(edge_value= edge_imout,im_out_fill= im_out)
     cv2.destroyAllWindows()
     findcircle(detectedges=bright,gray_image=edge)
+    
 
 cv2.destroyAllWindows()
+
 
