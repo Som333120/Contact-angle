@@ -4,13 +4,15 @@ from skimage import data, color, img_as_ubyte
 from skimage.feature import canny
 from skimage.transform import hough_ellipse
 from skimage.draw import ellipse_perimeter
+import cv2 
 
+from skimage.io import imread
 
-from skimage import io
-image_rgb = io.imread("21.jpg")
+image_rgb = imread("angle.png")
+
 # Load picture, convert to grayscale and detect edges
-#image_rgb = data.coffee()[0:220, 160:420]
-image_gray = color.rgb2gray(image_rgb)
+
+image_gray = color.rgb2gray((image_rgb))
 edges = canny(image_gray, sigma=2.0,
               low_threshold=0.55, high_threshold=0.8)
 
@@ -34,10 +36,14 @@ image_rgb[cy, cx] = (0, 0, 255)
 edges = color.gray2rgb(img_as_ubyte(edges))
 edges[cy, cx] = (250, 0, 0)
 
+fig2, (ax1, ax2) = plt.subplots(ncols=2, nrows=1, figsize=(8, 4), sharex=True,
+                                sharey=True,
+                                )
 
-from skimage import data
-from skimage.viewer import ImageViewer
+ax1.set_title('Original picture')
+ax1.imshow(image_rgb)
 
+ax2.set_title('Edge (white) and result (red)')
+ax2.imshow(edges)
 
-viewer = ImageViewer(edges)
-viewer.show()
+plt.show()
