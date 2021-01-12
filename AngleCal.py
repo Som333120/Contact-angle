@@ -95,7 +95,7 @@ while(1) :
 
     indices = np.where(edge != [0])
     coordinates = zip(indices[0], indices[1])
-    k =cv2.waitKey(1) &0xff 
+
 
     coor = coor.append(pd.DataFrame({'edge_axis-x': indices[0], 'edge_axis-y': indices[1]}), ignore_index=True)
     column = coor["edge_axis-x"]
@@ -103,9 +103,11 @@ while(1) :
     cv2.line(im,(0,max_index),(im.shape[1],max_index),color=(255,0,0),thickness=1,lineType=1)
 
     frames = [coor, data, contact_point]
+   
     result = pd.concat(frames,axis =1 )
     result.to_csv('result.csv', encoding='utf-8', index=False)
     #cv2.imshow('test',im)
+    k =cv2.waitKey(1) &0xff 
     if k == 27 :
         break
 
