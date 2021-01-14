@@ -20,7 +20,6 @@ pandas(1.1.5),Pillow(7.2.0) ,scikit-image(0.18.0),
 scipy(1.5.4)"""
 
 
-
 def nothing(x) : #if don't press anything in keybord exit
     pass
 im = 0 
@@ -99,22 +98,21 @@ def findconner(image_input,color_input ) :
         contact_point = contact_point.append(pd.DataFrame({'conner_axis-X': x, 'conner_axis-Y': y,}, index=[0]), ignore_index=True)
     return color_input
 
-def selectPoint(point1,point2,image_drawing_input,peak_loc) :
-    mark_1 = contact_point.loc[[point1],['conner_axis-X','conner_axis-Y']]
-    mark_2 = contact_point.loc[[point2],['conner_axis-X','conner_axis-Y']]
-    print(mark_1,mark_2)
-    pt1 = (int(mark_1.iloc[0,0]),int(mark_1.iloc[0,1]))
-    pt2 = (int(mark_2.iloc[0,0]),int(mark_2.iloc[0,1]))
-   
-    drae_line = cv2.line(image_drawing_input,pt2,pt1,(0,0,255),1,0)
-    loca = np.absolute((int(mark_1.iloc[0,0])) - int(mark_2.iloc[0,0]))
-    middle_peak = (loca/2) 
-    peakpt = (int(middle_peak),peak_loc)
-    middle_base = (int(mark_2.iloc[0,0]),peak_loc)
-    draw2peak = cv2.line(image_drawing_input,(0,0),peakpt,(0,0,255),1,0)
-    print(peakpt)
-    #cv2.imshow("aaa",image_drawing_input)
-    #cv2.waitKey(0)
+def selectPoint(pointL,pointR,image_drawing_input,peak_loc) :
+    mark_1 = contact_point.loc[[pointL],['conner_axis-X','conner_axis-Y']]
+    mark_2 = contact_point.loc[[pointR],['conner_axis-X','conner_axis-Y']]
+
+    xL = int(mark_1.iloc[0,0])
+    yL = int(mark_1.iloc[0,1])
+    xR = int(mark_2.iloc[0,0])
+    yR = int(mark_2.iloc[0,1])
+    pt1 = (xL,yL)
+    pt2 = (xR,yR)
+    print(pt1,pt2)
+
+    drawBaseline = cv2.line(image_drawing_input,pt2,pt1,(0,0,255),1,0)
+    lenghtBaseline = np.absolute((int(mark_1.iloc[0,0])) - int(mark_2.iloc[0,0]))
+    halfBaseline = int(lenghtBaseline/2) + xL
     return image_drawing_input
 
 image = cv2.imread('21.jpg',0) #read image from directery
@@ -127,9 +125,13 @@ bright = blur[int(r[1]):int(r[1]+r[3]), int(r[0]):int(r[0]+r[2])] #apply ROI
 
 coor = pd.DataFrame([])
 while (1) :
+    #find edge using canny detector 
     edge = cv2.Canny(bright,threshold1 = 100 ,threshold2 = 200 ) #find edge 
-
+    
+    #convert image to binary image 
     th, im_th = cv2.threshold(bright, 220, 225, cv2.THRESH_BINARY_INV)
+
+    # copy image im_th 
     im_floodfill = im_th.copy()
     h, w = im_th.shape[:2]
     mask = np.zeros((h+2, w+2), np.uint8)
@@ -138,28 +140,35 @@ while (1) :
     im_out = im_th | im_floodfill_inv #fill white\black hole ib image 
     edge_imout =cv2.Canny(im_out,100,200)
 
-
+    #convert Binary image to BGR
     RGB_convert =cv2.cvtColor(im_out,cv2.COLOR_GRAY2BGR) 
+    #Call findconner ffunctions to find corner
     corner_detect = findconner(im_out,RGB_convert ) 
+    
+    #find edge
     indices = np.where(edge != [0])
+    
+    #zip file (x,y)
     coordinates = zip(indices[0], indices[1])
+    
+    #append coordinates in dataframe coor
     coor = coor.append(pd.DataFrame({'edge_axis-x': indices[1], 'edge_axis-y': indices[0]}), ignore_index=True)
+    
+    #save dataframe in csv file
     coor.to_csv('coor.csv', encoding='utf-8', index=False)
+    
     column = coor["edge_axis-y"]
-    max_index = column.min() #find min value on edge 
-    print("max_index ; ",max_index)
-    df = pd.DataFrame({'edge_axis-y': [max_index]})
-    print(df)
+    min_index = column.min() #find min value on edge 
+    #print(coor["edge_axis-y"]['edge_axis-x'])
+    
+    # Show image 
     cv2.imshow('unsharp_image',corner_detect)
-
-
     if cv2.waitKey(0) == 27 :
-        print("XXX")
         cv2.destroyAllWindows()
-        point1s = int(input("Enter_Point 1 : "))
-        point2s = int(input("Enter_Point 2 : "))
-        output = selectPoint(point1 = point1s,point2 =point2s,image_drawing_input = RGB_convert,peak_loc=max_index)
-        output = cv2.resize(output,(output.shape[1]*3,output.shape[0]*3),interpolation=cv2.INTER_LINEAR)
+        point1s = int(input("Enter_Left_Point  : "))
+        point2s = int(input("Enter_Right_point : "))
+        output = selectPoint(pointL = point1s,pointR =point2s,image_drawing_input = RGB_convert,peak_loc=min_index)
+        output = cv2.resize(output,(output.shape[1],output.shape[0]),interpolation=cv2.INTER_LINEAR)
         cv2.imshow('output',output)
         cv2.waitKey(0)
         if cv2.waitKey(0) & 0xFF == ord('q'):
